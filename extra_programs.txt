@@ -1,0 +1,370 @@
+Q)Create a form such that, based on student roll number provided by user, the student details should be fetched (using ExpressJS):
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details</title>
+    <script>
+        function fetchStudentDetails() {
+            // Get roll number from input
+            const rollNumber = document.getElementById('rollNumber').value; const resultDiv = document.getElementById('result');
+            if (rollNumber.trim() === '') {
+                resultDiv.innerHTML = 'Please enter a roll number.'; return;
+            }
+            // Send a GET request to fetch student details 
+            fetch(`http://localhost:5000/api/student/${rollNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        resultDiv.innerHTML = data.message;
+                    } else {
+                        // Display student details 
+                        resultDiv.innerHTML = `
+                            <h2>Student Details</h2>
+                            <p><strong>Name:</strong> ${data.name}</p>
+                            <p><strong>Age:</strong> ${data.age}</p>
+                            <p><strong>Gender:</strong> ${data.gender}</p>
+                            <p><strong>Roll Number:</strong> ${data.rollNumber}</p>
+                            <p><strong>Subjects:</strong> ${data.subjects.join(', ')}</p>
+                            <p><strong>Address:</strong> ${data.address.street}, ${data.address.city}, ${data.address.zip}</p>
+                            `;
+                    }
+                })
+                .catch(err => {
+                    resultDiv.innerHTML = 'Error fetching student details. Please try again later.';
+                });
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Fetch Student Details</h1>
+    <form onsubmit="event.preventDefault(); fetchStudentDetails();">
+        <label for="rollNumber">Enter Roll Number:</label>
+        <input type="text" id="rollNumber" name="rollNumber" required>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="result" style="margin-top: 20px;"></div>
+</body>
+
+</html>
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Q.) Create a form such that CRUD operations can be performed on the student DB using ExpressJS
+
+index.html file:
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student CRUD</title>
+    <script>
+        async function createStudent() {
+            const studentData = {
+                name: document.getElementById('name').value, age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value, rollNumber: document.getElementById('rollNumber').value, subjects: document.getElementById('subjects').value.split(','), address: {
+                    street: document.getElementById('street').value, city: document.getElementById('city').value,
+                    zip: document.getElementById('zip').value
+                }
+            };
+            const response = await fetch('http://localhost:5000/api/students', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(studentData)
+            });
+            const result = await response.json();
+            47
+            alert(result.message);
+        }
+        async function getStudent() {
+            const rollNumber = document.getElementById('getRollNumber').value;
+            const response = await fetch(`http://localhost:5000/api/students/${rollNumber}`); const result = await response.json();
+            if (result.message) {
+                alert(result.message);
+            } else {
+                document.getElementById('studentDetails').innerHTML = `
+<h2>Student Details</h2>
+<p><strong>Name:</strong> ${result.name}</p>
+<p><strong>Age:</strong> ${result.age}</p>
+<p><strong>Gender:</strong> ${result.gender}</p>
+<p><strong>Roll Number:</strong> ${result.rollNumber}</p>
+<p><strong>Subjects:</strong> ${result.subjects.join(', ')}</p>
+<p><strong>Address:</strong> ${result.address.street}, ${result.address.city}, ${result.address.zip}</p>
+`;
+            }
+        }
+        async function updateStudent() {
+            const rollNumber = document.getElementById('updateRollNumber').value; const studentData = {
+                name: document.getElementById('updateName').value, age: document.getElementById('updateAge').value,
+                gender: document.getElementById('updateGender').value,
+                subjects: document.getElementById('updateSubjects').value.split(','), address: {
+                    street: document.getElementById('updateStreet').value, city: document.getElementById('updateCity').value,
+                    zip: document.getElementById('updateZip').value
+                }
+            };
+            const response = await fetch(`http://localhost:5000/api/students/${rollNumber}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(studentData)
+            });
+            const result = await response.json(); alert(result.message);
+        }
+        async function deleteStudent() {
+            const rollNumber = document.getElementById('deleteRollNumber').value;
+            const response = await fetch(`http://localhost:5000/api/students/${rollNumber}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json(); alert(result.message);
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Student CRUD Operations</h1>
+    <h2>Create Student</h2>
+    <form onsubmit="event.preventDefault(); createStudent();">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" required><br>
+        <label for="age">Age:</label><br>
+        <input type="number" id="age" required><br>
+        <label for="gender">Gender:</label><br>
+        <input type="text" id="gender" required><br>
+        <label for="rollNumber">Roll Number:</label><br>
+        <input type="text" id="rollNumber" required><br>
+        <label for="subjects">Subjects (comma separated):</label><br>
+        <input type="text" id="subjects" required><br>
+        <label for="street">Street:</label><br>
+        <input type="text" id="street" required><br>
+        <label for="city">City:</label><br>
+        <input type="text" id="city" required><br>
+        <label for="zip">Zip:</label><br>
+        <input type="text" id="zip" required><br>
+        <button type="submit">Create Student</button>
+    </form>
+    <h2>Get Student Details</h2>
+    <form onsubmit="event.preventDefault(); getStudent();">
+        <label for="getRollNumber">Roll Number:</label><br>
+        <input type="text" id="getRollNumber" required><br>
+        <button type="submit">Get Details</button>
+    </form>
+    <div id="studentDetails"></div>
+    <h2>Update Student</h2>
+    <form onsubmit="event.preventDefault(); updateStudent();">
+        <label for="updateRollNumber">Roll Number:</label><br>
+        <input type="text" id="updateRollNumber" required><br>
+        <label for="updateName">Name:</label><br>
+        <input type="text" id="updateName" required><br>
+        <label for="updateAge">Age:</label><br>
+        <input type="number" id="updateAge" required><br>
+        <label for="updateGender">Gender:</label><br>
+        <input type="text" id="updateGender" required><br>
+        <label for="updateSubjects">Subjects (comma separated):</label><br>
+        <input type="text" id="updateSubjects" required><br>
+        <label for="updateStreet">Street:</label><br>
+        <input type="text" id="updateStreet" required><br>
+        <label for="updateCity">City:</label><br>
+        <input type="text" id="updateCity" required><br>
+        <label for="updateZip">Zip:</label><br>
+        <input type="text" id="updateZip" required><br>
+        <button type="submit">Update Student</button>
+    </form>
+    <h2>Delete Student</h2>
+    <form onsubmit="event.preventDefault(); deleteStudent();">
+        <label for="deleteRollNumber">Roll Number:</label><br>
+        <input type="text" id="deleteRollNumber" required><br>
+        <button type="submit">Delete Student</button>
+    </form>
+</body>
+
+</html>
+
+server.js file:
+
+const express = require('express'); const mongoose = require('mongoose');
+const bodyParser = require('body-parser'); const cors = require('cors');
+// Initialize the app const app = express(); const port = 5000;
+// Middleware app.use(cors());
+app.use(bodyParser.json());
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/school', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log('MongoDB connected successfully');
+}).catch(err => {
+    console.log('MongoDB connection error:', err);
+});
+// Define the Student schema
+const studentSchema = new mongoose.Schema({
+
+    name: String, age: Number, gender: String,
+    rollNumber: { type: String, unique: true }, subjects: [String],
+    address: {
+        street: String, city: String, zip: String
+    }
+});
+// Create the Student model
+const Student = mongoose.model('Student', studentSchema);
+// API endpoints
+// Create: Add a new student
+app.post('/api/students', async (req, res) => {
+    const { name, age, gender, rollNumber, subjects, address } = req.body;
+    const student = new Student({
+        name,
+        age, gender, rollNumber, subjects, address
+    });
+    try {
+        await student.save();
+        res.status(201).json({ message: 'Student created successfully' });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error creating student', error });
+    }
+});
+// Read: Get a student by roll number
+app.get('/api/students/:rollNumber', async (req, res) => {
+    const { rollNumber } = req.params;
+    try {
+        const student = await Student.findOne({ rollNumber }); if (student) {
+            res.json(student);
+        } else {
+            res.status(404).json({ message: 'Student not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching student', error });
+    }
+});
+// Update: Update student details
+app.put('/api/students/:rollNumber', async (req, res) => {
+    const { rollNumber } = req.params;
+    const { name, age, gender, subjects, address } = req.body;
+    try {
+        const student = await Student.findOneAndUpdate(
+            { rollNumber },
+            { name, age, gender, subjects, address },
+            { new: true }
+        );
+
+        if (student) {
+            res.json({ message: 'Student updated successfully', student });
+        } else {
+            res.status(404).json({ message: 'Student not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating student', error });
+    }
+});
+// Delete: Delete a student by roll number
+app.delete('/api/students/:rollNumber', async (req, res) => {
+    const { rollNumber } = req.params;
+    try {
+        const student = await Student.findOneAndDelete({ rollNumber }); if (student) {
+            res.json({ message: 'Student deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'Student not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting student', error });
+    }
+});
+// Start the server 
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Q)  You are tasked with simulating an ice cream production process using JavaScript.
+    The user will select a fruit, holder, and topping, and the program will simulate the production process with specific delays for each step.
+    Input:
+    A fruit (e.g., "apple").
+    A holder (e.g., "cup").
+    A topping (e.g., "chocolate").
+    Ouptut: (i.e., the following production steps are executed with delays:)
+    1.
+    Production starts immediately.
+    2.
+    After 1 second: The fruit is chopped.
+    3.
+    After 1 second: Liquid (water and ice) is added.
+    4.
+    After 2 seconds: The machine starts.
+    5.
+    After 2 seconds: Ice cream is placed in the holder.
+    6.
+    After 3 seconds: Topping is added.
+    7.
+    After 2 seconds: Ice cream is served.
+
+const readline = require('readline'); let stocks = {
+    Fruits: ["strawberry", "grapes", "banana", "apple"], liquid: ["water", "ice"],
+    holder: ["cone", "cup", "stick"], toppings: ["chocolate", "peanuts"],
+};
+// Set up readline interface for user input 
+const rl = readline.createInterface({
+    input: process.stdin, output: process.stdout
+});
+// Ask for fruit selection 
+const askFruit = () => {
+    rl.question(`Choose a fruit (${stocks.Fruits.join(', ')}): `, (fruit) => {
+        if (stocks.Fruits.includes(fruit.toLowerCase())) {
+
+            askHolder(fruit);
+        } else {
+            console.log("Invalid fruit selection. Please try again."); askFruit();
+        }
+    });
+};
+// Ask for holder selection const 
+askHolder = (fruit) => {
+    rl.question(`Choose a holder (${stocks.holder.join(', ')}): `, (holder) => {
+        if (stocks.holder.includes(holder.toLowerCase())) {
+            askTopping(fruit, holder);
+        } else {
+            console.log("Invalid holder selection. Please try again."); askHolder(fruit);
+        }
+    });
+};
+// Ask for topping selection
+const askTopping = (fruit, holder) => {
+    rl.question(`Choose a topping (${stocks.toppings.join(', ')}): `, (topping) => {
+        if (stocks.toppings.includes(topping.toLowerCase())) {
+            production(fruit, holder, topping);
+        } else {
+            console.log("Invalid topping selection. Please try again."); askTopping(fruit, holder);
+        }
+    });
+};
+// Ice cream production process
+const production = (fruit_name, holder_name, topping_name) => {
+    console.log(`${fruit_name} was selected`);
+    console.log("Production has started");
+    setTimeout(() => {
+        console.log(`The ${fruit_name} fruit has been chopped`); setTimeout(() => {
+            console.log("Water and ice added"); setTimeout(() => {
+                console.log("Start the machine"); setTimeout(() => {
+                    console.log(`Ice cream placed on ${holder_name}`); setTimeout(() => {
+                        console.log(`${topping_name} as toppings`); setTimeout(() => {
+                            console.log("Serve Ice Cream");
+                            rl.close(); // Close readline after completion
+                        }, 2000); // Serve ice cream after 2 seconds
+                    }, 3000); // Add topping after 3 seconds
+                }, 2000); // Place ice cream after 2 seconds
+            }, 2000); // Start machine after 2 seconds
+        }, 1000); // Add liquid after 1 second
+    }, 1000); // Chop fruit after 1 second
+};
+// Start the process askFruit();
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
